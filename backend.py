@@ -32,6 +32,7 @@ def verificar_cliente(dni):
     if dias > 0:
         df.at[index, "dias restantes"] = dias - 1
         df.at[index, "ultimo_ingreso"] = hoy
+        df.at[index, "proximo dia"] = calcular_proximo_dia(datetime.now().strftime("%Y-%m-%d"),df.at[index, "dias semanal"],datetime.now().strftime("%Y-%m-%d"))
         df.to_excel(archivo, index=False)
 
         return {
@@ -164,7 +165,8 @@ def actualizar_dias_clientes():
     for _, fila in df.iterrows():
         proximo = datetime.strptime(fila["proximo dia"],"%Y-%m-%d")
         ultimo_str = fila["ultimo_ingreso"]
-        ultimo = datetime.strptime(fila["ultimo_ingreso"],"%Y-%m-%d") if ultimo_str not in ("","nan","Nat","None") else None
+        ultimo_str = str(ultimo_str)
+        ultimo = datetime.strptime(ultimo_str,"%Y-%m-%d") if ultimo_str not in ("","nan","Nat","None") else None
         print("--------------------------------------------------")
         print("Backend: actualizar dias: proximo:",proximo,"ultimo:",ultimo)
 
@@ -201,12 +203,13 @@ def traduccion_nombre_dni(nombre: str) -> int:
     index = cliente.index[0]
     return df.at[index, "dni"]
 
-def calcular_proximo_dia(fecha_str: str, dias_semanal: list) -> str:
+def calcular_proximo_dia(fecha_str: str, dias_semanal: list, fe: str = None) -> str:
     dias_semana_nombres = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"]
 
     fecha = datetime.strptime(fecha_str, "%Y-%m-%d")
+    fecha_pivote = (datetime.now() - timedelta(days=1)) if fe is None else datetime.strftime(fe, "%Y-%m-%d")
 
-    for _ in range(7):  # como máximo recorre una semana completa
+    while (fecha > fecha_pivote):
         fecha += timedelta(days=1)
         print("Backend: calcular proximo: fecha",fecha)
         nombre_dia = dias_semana_nombres[fecha.weekday()]
