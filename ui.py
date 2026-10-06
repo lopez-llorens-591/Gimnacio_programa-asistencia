@@ -90,13 +90,13 @@ def iniciar_ui():
     def abrir_admin():
         admin = tk.Toplevel(ventana)
         admin.title("Admin")
-        admin.geometry("350x100")
+        admin.geometry("300x80")
 
         admin.bind("<Escape>", lambda e: admin.destroy())
 
         tk.Button(admin, text="Agregar Cliente",command=lambda:ventana_agregar(False)).pack(fill="x",pady=3)
         tk.Button(admin, text="Clientes", command=ventana_clientes).pack(fill="x",pady=3)
-        tk.Button(admin, text="Configuracion", command=ventana_configuracion).pack(fill="x",padx=3)
+        #tk.Button(admin, text="Configuracion", command=ventana_configuracion).pack(fill="x",padx=3)
 
     def ventana_agregar(editar: bool, id: int | None = None):
         cli_var = bcn.get_cliente_id(id) if editar else None
@@ -307,7 +307,7 @@ def iniciar_ui():
         frame_b_b = tk.Frame(frame_b)
         frame_b_b.pack(side="bottom", fill="y",padx=5,pady=5)
 
-        agregar_dias_boton = tk.Button(frame_b_b, text="Agregar Dias", command=lambda: mensaje_confirmacion("Agregar dias", "¿Desea actualizar el mas al cliente?",clientes_toplevel,agregar_dias), state="disabled")
+        agregar_dias_boton = tk.Button(frame_b_b, text="Agregar Dias", command=lambda: mensaje_confirmacion("Agregar dias", "¿Desea actualizar el mes al cliente?",clientes_toplevel,agregar_dias), state="disabled")
         agregar_dias_boton.pack(side="left",padx=5)
         eleminar_cliente_boton = tk.Button(frame_b_b, text="Eleminar Cliente", command=lambda: mensaje_confirmacion("Eleminar cliente", "¿Desea eleminar a este cliente?",clientes_toplevel,eleminar_cliente), state="disabled")
         eleminar_cliente_boton.pack(side="left",padx=5)
