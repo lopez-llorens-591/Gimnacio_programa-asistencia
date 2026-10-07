@@ -208,7 +208,7 @@ def iniciar_ui():
     def ventana_clientes():
         clientes_toplevel = tk.Toplevel(admin)
         clientes_toplevel.title("Clientes")
-        clientes_toplevel.geometry("650x350")
+        clientes_toplevel.geometry("700x350")
 
         clientes_toplevel.bind("<Escape>", lambda e: clientes_toplevel.destroy())
 
@@ -219,6 +219,7 @@ def iniciar_ui():
         text_ultima_fecha = tk.StringVar(value="Ultima Fecha: ")
         text_id = tk.StringVar(value="ID: ")
         text_proximo_dia = tk.StringVar(value="Proximo dia: ")
+        text_dias_x_semana = tk.StringVar(value="Dias de ingreso: ")
 
         
         def buscar_cliente() -> list:
@@ -229,16 +230,16 @@ def iniciar_ui():
             label_nada.pack_forget()
             contenedor.pack(expand=True)  # muestra el bloque completo si estaba oculto
 
-            es_hoy: str = "" if not bcn.get_es_hoy(cli[4]) else " (Hoy)"
-            es_hoy2: str = "" if not bcn.get_es_hoy(cli[6]) else " (Hoy)"
+
 
             text_id.set(f"ID:  {cli[0]}")
             text_nombre.set(f"Nombre: {cli[1]}")
             text_dni.set(f"D.N.I: {cli[2]}")
             text_dias_servicio.set(f"Dias X Semana: {cli[5]}")
             text_dias_faltantes.set(f"Dias faltantes: {cli[3]}")
-            text_ultima_fecha.set(f"Ultima Fecha: {cli[4]} {es_hoy}")
-            text_proximo_dia.set(f"Proximo dia: {cli[6]} {es_hoy2}")
+            text_ultima_fecha.set(f"Ultima Fecha: {bcn.get_dias_de_semana(cli[4])} {cli[4]} {bcn.advervios_fecha(cli[4])}")
+            text_proximo_dia.set(f"Proximo dia: {bcn.get_dias_de_semana(cli[6])} {cli[6]} {bcn.advervios_fecha(cli[6])}")
+            text_dias_x_semana.set(f"Dias de ingreso: {cli[7]}")
 
             editar_cliente_boton.config(state="normal")
             eleminar_cliente_boton.config(state="normal")
@@ -303,6 +304,11 @@ def iniciar_ui():
         fila4.pack(pady=5)
 
         tk.Label(fila4,textvariable=text_proximo_dia,bg="grey", font=("Arial",12)).pack(side="left",padx=5)
+
+        fila5 = tk.Frame(contenedor, bg="blue")
+        fila5.pack(pady=5)
+
+        tk.Label(fila5,textvariable=text_dias_x_semana,bg="white",font=("Arial",12)).pack(side="left",padx=5)
 
         frame_b_b = tk.Frame(frame_b)
         frame_b_b.pack(side="bottom", fill="y",padx=5,pady=5)

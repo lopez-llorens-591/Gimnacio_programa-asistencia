@@ -2,16 +2,19 @@ import pandas as pd
 from datetime import datetime, timedelta
 import confi
 
-archivo = "datos/clientes.xlsx"
+archivo = confi.RUTA_CLIENTES
+
+hoy = datetime.now().strftime("%Y-%m-%d")
+
 
 def verificar_cliente(dni):
+    print("Backend: Verificar dni: Alguien puso su dni")
     df = pd.read_excel(archivo)
     df.columns = df.columns.str.strip().str.lower()
 
     df["ultimo_ingreso"] = df["ultimo_ingreso"].astype(str)
 
-    hoy = datetime.now().strftime("%Y-%m-%d")
-
+    
     cliente = df[df["dni"] == dni]
 
     if cliente.empty:
@@ -32,7 +35,7 @@ def verificar_cliente(dni):
     if dias > 0:
         df.at[index, "dias restantes"] = dias - 1
         df.at[index, "ultimo_ingreso"] = hoy
-        df.at[index, "proximo dia"] = calcular_proximo_dia(datetime.now().strftime("%Y-%m-%d"),df.at[index, "dias semanal"],datetime.now().strftime("%Y-%m-%d"))
+        df.at[index, "proximo dia"] = calcular_proximo_dia(hoy,df.at[index, "dias semanal"],hoy)
         df.to_excel(archivo, index=False)
 
         return {
@@ -140,9 +143,11 @@ def agregar_dias(dni)->bool:
 
 
     dias_extra = get_diasrR_diasS(df.at[index, "dias x semana"])
+    proxi = calcular_proximo_dia(hoy,df.at[index, "dias semanal"])
 
   
     df.at[index, "dias restantes"] += dias_extra
+    df.at[index, "proximo dia"] = proxi
     df.to_excel(archivo, index=False)
 
     return True
@@ -207,14 +212,17 @@ def calcular_proximo_dia(fecha_str: str, dias_semanal: list, fe: str = None) -> 
     dias_semana_nombres = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"]
 
     fecha = datetime.strptime(fecha_str, "%Y-%m-%d")
-    fecha_pivote = (datetime.now() - timedelta(days=1)) if fe is None else datetime.strftime(fe, "%Y-%m-%d")
+    print("Backend: Calcular proximo dia: tranformo fecha en datetime:",fecha.date())
+    fecha_pivote = (datetime.now() - timedelta(days=1)) if fe is None else datetime.strptime(fe, "%Y-%m-%d")
+    print("Backend: Calcular proximo dia: La fecha pivote es:",fecha_pivote.date())
 
-    while (fecha > fecha_pivote):
+    print("Backend: Calcualr proximo dia: fecha es mas grande que la fecha pivote?:",(fecha > fecha_pivote))
+    while (fecha >= fecha_pivote):
         fecha += timedelta(days=1)
         print("Backend: calcular proximo: fecha",fecha)
         nombre_dia = dias_semana_nombres[fecha.weekday()]
         print("Backend: calcular proximo: nombre del dia:",nombre_dia)
-
+        print("Backend: Calcualr proximo dia: fecha es mas grande que la fecha pivote?:",(fecha > fecha_pivote))
         if nombre_dia in dias_semanal:
             print("Backend: calcular proximo: por aca nombre dia en dia semanal",fecha.strftime("%Y-%m-%d"))
             return fecha.strftime("%Y-%m-%d")
@@ -238,6 +246,44 @@ def get_ultimo_id() -> int:
 
 def get_es_hoy(fecha:str) -> bool:
     return datetime.now().strftime("%Y-%m-%d") == fecha
+
+
+def get_dias_de_semana(fecha:str) -> str:
+    dias_semana_nombres = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"]
+
+    fecha_datetime = datetime.strptime(fecha, "%Y-%m-%d")
+    fecha_datetime.date()
+
+    nombre_dia = dias_semana_nombres[fecha_datetime.weekday()]
+
+    return nombre_dia
+
+
+def advervios_fecha(fecha:str) -> str:
+    fecha_datetime = datetime.strptime(fecha,"%Y-%m-%d")
+    fecha_datetime.date()
+    hoy_s = datetime.strptime(hoy,"%Y-%m-%d")
+    hoy_s.date()
+
+    diferencia = (fecha_datetime - hoy_s).days
+
+    match diferencia:
+        case 0:
+            return "(Hoy)"
+        case -1:
+            return "(Ayer)"
+        case -2:
+            return "(Anteayer)"
+        case 1:
+            return "(Mañana)"
+        case 2:
+            return "(Pasado Mañana)"
+        case _:
+            if diferencia < 0:
+                return f"(Hace {abs(diferencia)} dias)"
+            else:
+                return f"(En {diferencia} dias)"
+
 
 def get_diasrR_diasS(dias:int) -> int:
     return dias * 4

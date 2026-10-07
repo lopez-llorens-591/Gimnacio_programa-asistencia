@@ -1,5 +1,4 @@
 import os
-import configparser
 from openpyxl import Workbook
 from confi import CARPETA_DATOS, RUTA_CLIENTES, RUTA_CONFIGURACION, crear_configuracion_por_defecto
 
