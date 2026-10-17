@@ -24,6 +24,7 @@ CONFIGURACION_POR_DEFECTO = {
     "general":{
         "version": "1",
         "fin_semana": "True",
+        "restar_dias": "false"
     },
 }
 

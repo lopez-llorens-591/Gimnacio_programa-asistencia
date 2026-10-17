@@ -1,5 +1,6 @@
 import pandas as pd
 from datetime import datetime, timedelta
+from dateutil.relativedelta import relativedelta
 import confi
 
 archivo = confi.RUTA_CLIENTES
@@ -103,7 +104,9 @@ def guardar_cliente(id: int, nombre: str, dni: int, diasxsemana:int, dias_semana
                 "ultimo_ingreso": "",
                 "dias x semana": diasxsemana,
                 "dias semanal": dias_semana_str,
-                "proximo dia": dias_proximo 
+                "proximo dia": dias_proximo,
+                "fecha_inicio":hoy,
+                "fecha_final":calcular_fechas_ini_fin(hoy) 
             }
 
             df = pd.concat([df, pd.DataFrame([nuevo])], ignore_index=True)
@@ -142,12 +145,19 @@ def agregar_dias(dni)->bool:
     index = cliente.index[0]
 
 
-    dias_extra = get_diasrR_diasS(df.at[index, "dias x semana"])
-    proxi = calcular_proximo_dia(hoy,df.at[index, "dias semanal"])
 
-  
+    if confi.get_config("general","restar_dias",tipo=bool):
+        proxi = calcular_proximo_dia(hoy,df.at[index, "dias semanal"])
+        df.at[index, "proximo dia"] = proxi
+
+
+
+    dias_extra = get_diasrR_diasS(df.at[index, "dias x semana"])
+
+    df.at[index, "fecha_inicio"] = hoy
+    df.at[index, "fecha_final"] = calcular_fechas_ini_fin(hoy)
     df.at[index, "dias restantes"] += dias_extra
-    df.at[index, "proximo dia"] = proxi
+   
     df.to_excel(archivo, index=False)
 
     return True
@@ -155,6 +165,21 @@ def agregar_dias(dni)->bool:
 def actualizar_dias_clientes():
     df = pd.read_excel(archivo)
     df.columns = df.columns.str.strip().str.lower()
+
+    if not confi.get_config("general","restar_dias",tipo=bool):
+        df["fecha_final"] = df["fecha_final"].astype(str)
+        id_cuota_terminada = []
+
+        for _,fila in df.iterrows():
+            fecha_final = datetime.strptime(fila["fecha_final"],"%Y-%m-%d")
+
+            hoy_date = datetime.strptime(hoy,"%Y-%m-%d")
+            if fecha_final <= hoy_date:
+                id_cuota_terminada.append(fila["id"])
+
+        df.loc[df["id"].isin(id_cuota_terminada), "dias restantes"] = 0
+             
+        return
 
     if "proximo dia" not in df.columns:
         df["proximo dia"] = ""
@@ -229,6 +254,12 @@ def calcular_proximo_dia(fecha_str: str, dias_semanal: list, fe: str = None) -> 
 
     return fecha_str  # fallback: no debería pasar si dias_semanal no está vacía
 
+def calcular_fechas_ini_fin(fecha:str)->str:
+    fecha_final = datetime.strptime(fecha,"%Y-%m-%d") + relativedelta(months=1)
+    return fecha_final.strftime("%Y-%m-%d")
+
+    
+
 def get_cliente(nombre:str) -> list:
     df = pd.read_excel(archivo)
     cliente = df[df["nombres"] == nombre]
@@ -236,7 +267,7 @@ def get_cliente(nombre:str) -> list:
     if cliente.empty:
         return []
 
-    return cliente.iloc[0][["id","nombres", "dni", "dias restantes", "ultimo_ingreso","dias x semana","proximo dia","dias semanal"]].tolist()
+    return cliente.iloc[0][["id","nombres", "dni", "dias restantes", "ultimo_ingreso","dias x semana","proximo dia","dias semanal","fecha_inicio","fecha_final"]].tolist()
 
 def get_ultimo_id() -> int:
     df = pd.read_excel(archivo)

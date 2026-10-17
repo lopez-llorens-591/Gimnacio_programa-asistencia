@@ -2,7 +2,7 @@ import os
 from openpyxl import Workbook
 from confi import CARPETA_DATOS, RUTA_CLIENTES, RUTA_CONFIGURACION, crear_configuracion_por_defecto
 
-encabezado_inicial = ["id","nombres","dni","dias restantes","ultimo_ingreso","dias x semana","proximo dia","dias semanal"]
+encabezado_inicial = ["id","nombres","dni","dias restantes","ultimo_ingreso","dias x semana","proximo dia","dias semanal","fecha_inicio","fecha_final"]
 
 
 
